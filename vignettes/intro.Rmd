@@ -1,0 +1,237 @@
+---
+title: "Introduction to StatComp22031"
+author: "Mo Yang"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction to StatComp22031}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Overview
+
+__StatComp22031__ is a simple R package containing two parts. It provides functions to simulate TS-OU (tempered stable Ornstein-Uhlenbeck) process which is about stochastic volatility of assets. This process consists of three parts, each of which has a corresponding function. It contains _s0_2_ for the initial stationary distribution, _s1_2_ for the non-compound Poission driving part, _s2_2_ for the compound Poission driving part. Then the function _TSOU_ gives the complete process.
+
+Also, it compares the performance of R and R++ (implemented through the R package _Rcpp_) by using a simple situation, which is about the urban shortest path problem. _R_shortest_ and _Rcpp_shortest_ functions are provided to solve the problem and compare R and Rcpp.
+
+The R package 'rbenchmark' can be used to benchmark the above R and C++ functions.
+
+## TS-OU process (the first part)
+
+### Brief introduction of principle
+
+TS-OU process is an important subclass of non-Gaussian OU process, including inverse Gaussian OU process, and TS-OU process $\{\sigma^2(t),t\ge0\}$ satisfies stochastic differential equation:
+
+$\mathrm{d} \sigma^2(\mathrm{t})=-\lambda \sigma^2(\mathrm{t}) \mathrm{dt}+\mathrm{dz}(\lambda \mathrm{t})\quad\quad\quad(1)$
+
+$\lambda>0$ is a parameter and $\sigma^2(t)$ is used to describe the spot volatility.It has a stable marginal distribution - TS($\kappa,\delta,\gamma$) ($\kappa\in(0,1),\delta>0,\gamma\ge0$). Its Lévy measure is
+
+$u(x)=\delta 2^k \frac{\kappa}{\Gamma(1-\kappa)} x^{-1-\kappa} \exp \left(-\frac{1}{2} \gamma^{1 / k} x\right), x>0\quad\quad\quad(2)$
+
+$z(t)$ is a Lévy process with positive increment, and the Lévy measure of $z(1)$ distribution is
+
+$w(x)=\delta 2^k \frac{\kappa}{\Gamma(1-\kappa)}\left(\kappa x^{-1}+\frac{1}{2} \gamma^{1 / k}\right) x^{-\kappa} \exp \left(-\frac{1}{2} \gamma^{1 / k} \mathrm{x}\right),x>0\quad\quad\quad(3)$
+
+Integration form of TS-OU process determined by stochastic differential equation (1) is
+
+$\sigma^2(t)=\mathrm{e}^{-\lambda t} \sigma^2(0)+\mathrm{e}^{-\lambda t} \int_0^1 \mathrm{e}^{\lambda s} \mathrm{dz}(\lambda \mathrm{s})\quad\quad\quad(4)$
+
+According to the Lévy measure of $z(1)$, $z(1)$ can be divided into two parts, one part is $ \mathrm{z}^{(1)} (1) $,and its Lévy measure is $w^{(1)}(x)=$ $(\delta \kappa) 2^k \frac{\kappa}{\Gamma(1-\kappa)} x^{-1-\kappa} \exp \left(-\frac{1}{2} \gamma^{1 / \kappa} \mathrm{x}\right), \mathrm{x}>0$. That's to say, $\mathrm{z}^{(1)}(1)$ obeys the distribution of $\mathrm{TS}(\kappa, \kappa \delta, \delta)$. The other part is named $\mathrm{z}^{(2)}$(1), and its Lévy measure is $w^{(2)}(x)=(\delta \gamma \kappa) \frac{\left(\gamma^{1 / \kappa} / 2\right)^{1-\kappa}}{\Gamma(1-\kappa)} x^{-\kappa} \exp \left(-\frac{1}{2} \gamma^{1 / \kappa} x\right)$, $\mathrm{x}>0$. The reason is $\frac{\left(\gamma^{1 / \kappa} / 2\right)^{1-\kappa}}{\Gamma(1-\kappa)} \mathrm{x}^{-\kappa} \exp \left(-\frac{1}{2} \gamma^{1 / \kappa} \mathrm{x}\right)$ is the density function of $\Gamma\left(1-\kappa, \frac{1}{2} \gamma^{1 / \kappa}\right)$ distribution, where $1-\kappa$ is a shape parameter, $\frac{1}{2} \gamma^{1 / k}$ is a scale parameter, so $\mathrm{z}^{(2)}(\mathrm{t})$ is a compound Poisson process, which is
+
+$\mathrm{z}^{(2)}(\mathrm{t}) \stackrel{\mathrm{d}}{=} \sum_{i=1}^{N(t)} \mathbf{Y}_i\quad\quad\quad(5)$
+
+Among them, $\{N(t), t\geqslant 0\}$ is a compound Poisson process with intensity parameter $\delta \gamma \kappa$, and $\mathrm{Y}_1,\mathrm{Y}_2,\cdots$ are independent and identically distributed. $\mathrm{Y}_{\mathrm{i}} \sim \Gamma\left(1-\kappa, \frac{1}{2} \gamma^{1 / \kappa}\right)$.
+
+According to (4),
+
+$$
+\begin{aligned}
+e^{-\lambda t} \int_0^1 e^{\lambda s} \mathrm{dz}(\lambda \mathrm{s})= & \mathrm{e}^{-\lambda t} \int_0^1 \mathrm{e}^{\lambda \mathrm{s}} \mathrm{d} \mathrm{z}^{(1)}(\lambda \mathrm{s})+ \\
+& \mathrm{e}^{-\lambda t} \int_0^1 \mathrm{e}^{\lambda s} \mathrm{dz^{(2)}}(\lambda \mathrm{s})
+\end{aligned}
+$$
+
+And we have
+
+$\mathrm{e}^{-\lambda t} \int_0^1 \mathrm{e}^{\lambda s} \mathrm{dz^{(1)}}(\lambda \mathrm{s}) \stackrel{\mathrm{d}}{=}\sum_{i=1}^{\infty} \exp \left(-\lambda t \mathrm{r}_{\mathrm{i}}\right) \text{min}\left\{\left(\frac{\mathrm{a}_i \kappa}{\mathrm{A} \lambda}\right)^{-1 / \kappa}, \mathrm{e}_{\mathrm{i}} \mathrm{v}_{\mathrm{i}}^{1 / \kappa}\right\}\quad\quad\quad(6)$
+
+$\left\{e_i\right\},\left\{v_i\right\},\left\{a_i\right\},\left\{r_i\right\}$ are mutually independent. $\left\{e_i\right\}$ is a series of independent exponential distributions with an average value of $1/\mathrm{B}$, $\left\{v_i\right\}$ and $\left\{r_i\right\}$ are independent random variables that are uniformly distributed on $[0,1]$, and $\mathrm{a}_1 < \mathrm{a}_2 < \cdots$ is the arrival time of Poisson process with intensity of 1, and the above $\mathrm{A}=\delta 2^\kappa \frac{\kappa^2}{\Gamma(1-\kappa)}$, $\mathrm{B}=\frac{1}{2} \gamma^{1 / \kappa}$.
+
+According to (5) and Lebeague-Stieltjes integration,
+
+$e^{-\lambda t} \int_0^1 e^{\lambda s} d z^{(2)}(\lambda s) \stackrel{d}{=} e^{-\lambda t} \sum_{i=1}^{N(\lambda t)} e^{\lambda U_i} Y_i\quad\quad\quad(7)$
+
+$\{N(t),t\ge0\}$ and $Y_i$ are as above. $U_i,i=1,2,\cdots$ is the arrival time of the $i$th hop of $N(\lambda t)$.
+
+In addition, initial stationary distribution is as bellow:
+
+$\sigma^2(0) \stackrel{d}{=} \sum_{i=1}^{\infty} \text{min}\left\{\left(\frac{a_i \kappa}{A_0}\right)^{-1 / \kappa}, e_i v_i^{1 / \kappa}\right\}\quad\quad\quad(8)$
+
+$\left\{e_i\right\},\left\{v_i\right\},\left\{a_i\right\},B$ are as above, $\mathrm{A_0}=\delta 2^\kappa \frac{\kappa}{\Gamma(1-\kappa)}$.
+
+### Simulating data
+
+According to (8), for the simulation of initial stationary distribution, we mainly deal with a random infinite sequence. Because $\left\{a_i\right\}$ is an increasing random sequence, $\left\{\left(\frac{a_i \kappa}{A_0}\right)^{-1 / k}\right\}$ is an decreasing sequence. Therefore, we can consider adopting the dynamic truncation method to approximate the infinite sequence. It is reasonable to adopt this-square method, which is $min\left\{\left(\frac{\mathrm{a}_{\mathrm{i}} \kappa}{\mathrm{A}_0}\right)^{-1 / \kappa}, \mathrm{e}_{\mathrm{i}} \mathrm{v}_{\mathrm{i}}^{1/\kappa}\right) \leqslant\left(\frac{\mathrm{a}_{\mathrm{i}} \kappa}{\mathrm{A}_0}\right)^{-1 / \kappa}$,through the control system $\left(\frac{\mathrm{a}_{\mathrm{i}} \kappa}{\mathrm{A}_0}\right)^{-1 / \kappa}$, we can fully control the size of the remaining term after the infinite sequence intercepts the preceding finite term.
+
+The code to realize this process is as follows:
+```{r,eval=FALSE}
+function(kappa,delta,gamma,small){
+  A0=delta*2^kappa*kappa/gamma(1-kappa)
+  B=gamma^(1/kappa)/2
+  sigma0_2=0
+  a0=rexp(1,rate=1)
+  decr_u=((a0*kappa)/A0)^(-1/kappa)
+  while(decr_u>small){  ##control truncation number
+    e0=rexp(1,rate=B);v0=runif(1)
+    sigma0_2=sigma0_2+min(decr_u,e0*(v0)^2)
+    a=rexp(1,rate=1);a0=a0+a
+    decr_u=((a0*kappa)/A0)^(-1/kappa)
+  }
+  return(sigma0_2)
+}
+```
+
+Let $kappa=0.5,\delta=2,\gamma=4$, we can get Inverse Gaussian distribution - IG(2,4).
+```{r,eval=TRUE}
+library(StatComp22031)
+set.seed(50)
+sigma0_2=replicate(1000,s0_2(0.5,2,4,0.00001))
+par(mfrow=c(1,1))
+hist(sigma0_2,freq=FALSE)
+```
+
+According to (6), for the non-compound Poisson process driving part of TS-OU process, its simulation method is similar to that of initial stationary distribution, and its main program is as follows:
+```{r,eval=FALSE}
+function(lambda,kappa,delta,gamma,Delta,small){
+  A=delta*2^kappa*kappa^2/gamma(1-kappa)
+  B=gamma^(1/kappa)/2
+  sigma1_2=0
+  a1=rexp(1,rate=1)
+  decr_u1=((a1*kappa)/(A*lambda*Delta))^(-1/kappa)
+  while(decr_u1>small){
+    e1=rexp(1,rate=B);v1=runif(1);r1=runif(1)
+    sigma1_2=sigma1_2+exp(-lambda*Delta*r1)*min(decr_u1,e1*(v1)^(1/kappa))
+    a=rexp(1,rate=1);a1=a1+a
+    decr_u1=((a1*kappa)/(A*lambda*Delta))^(-1/kappa)
+  }
+  return(sigma1_2)
+}
+```
+
+According to (7), the simulation method of the compound Poisson process driving part of TS-OU process can be realized by controlling the number of Poisson process hops in a certain time with conditional loop statements. The main program is as follows:
+```{r,eval=FALSE}
+function(lambda,kappa,delta,gamma,Delta,small){
+  t=rexp(1,rate=lambda*delta*gamma*kappa)
+  tild_sig=0
+  while(t<=Delta){
+    re=rgamma(1,1-kappa,rate=1/2*gamma^(1/kappa))
+    tild_sig=tild_sig+exp(lambda*t)*re
+    t=t+rexp(1,rate=lambda*delta*gamma*kappa)
+  }
+  sigma2_2=exp(-lambda*Delta)*tild_sig
+  return(sigma2_2)
+}
+```
+
+And then we can realize the TS-OU process:
+```{r eval=FALSE}
+function(lambda,kappa,delta,gamma,num,Delta=1,small=0.00001){
+  sigma_2=numeric(num)
+  sigma_2[1]=s0_2(kappa,delta,gamma,small)
+  for(j in 2:num){
+    sigma_2[j]=exp(-lambda*Delta)*sigma_2[j-1]+s1_2(lambda,kappa,delta,gamma,Delta,small)+s2_2(lambda,kappa,delta,gamma,Delta,small)
+  }
+  return(sigma_2)
+}
+```
+
+For the simulation of TS-OU process orbit, the empirical autocorrelation function of this orbit is used to test. All $\mathrm{OU}$ processes $\left\{\sigma^2(\mathrm{t}), \geqslant 0\right\}$ driven by the positive Lévy process determined by equation (1) has the autocorrelation function $r(s)=\exp (-\lambda|s|)$. Select the parameters of TS-OU as $\lambda=0.02, \kappa=0.4, \delta=2, \gamma=5$, set the sampling interval as $\Delta=1$, and control the truncation variable $\text{small}=0.00001$.
+```{r eval=TRUE}
+set.seed(10)
+sigma_2=TSOU(0.02,0.4,2,5,5000)
+r=function(lambda,s){exp(-lambda*abs(s))}
+x=0:35
+par(mfrow=c(1,1))
+acf(sigma_2)
+lines(x,r(0.02,x),type="l")
+```
+
+You can see that the fitting effect is very good.
+
+## Benchmarking R and Rcpp (the second part)
+
+### Problem description
+
+Suppose there are cities of _n_, numbered $1,2,\dots,n$. Some cities are known to be connected by highways, and each pair of connected cities is named $(F_i,T_i)$, where $F_i,T_i\in\{1,2,\dots,n\}$ and $F_i<T_i$,$i=1,2,\dots,m$. Except these directly connected cities, any two other cities can only be connected by other cities, or they can't be connected by highways at all. These connections can be entered with a new _R_ matrix $m\times2$, each row of which is a pair of $(F_i,T_i)$ values.
+
+It is required to write an _R_ function. After inputting the direct connection $\text{M}$, it will output a matrix _R_ $n\times n$. _R[i,i]=0, R[i,j]=1_ means direct connection, _R[i,j]=k_ $(k\ge2)$ means that city _i_ and city _j_ need to be connected by at least _k_ sections of expressway, and _R[i,j]=Inf_ means that city _i_ and city _j_ cannot be connected by expressway. The element value of _R_ only takes into account the number of highway sections passing by, not the specific mileage. If moving from one city to a directly connected city by expressway is called one moving step, the element $(i,j)$ in _R_ is the number of steps that need to be moved from city _i_ to city _j_ by expressway.
+
+### Simulation and comparison
+
+This problem must use circulation, which is difficult to vectorize, and belongs to the problem that R is not good at. You can consider using Rcpp to implement the program in C++ language, which can greatly speed up.
+
+The source R code for _R_shortest_ is as follows:
+```{r,eval=FALSE}
+function(M){
+  n=max(M)
+  A=matrix(Inf,n,n)
+  for(i in 1:nrow(M)){A[M[i,1],M[i,2]]=A[M[i,2],M[i,1]]=1}
+  diag(A)=0
+  while(TRUE){
+    B=A
+    for(i in 1:n){
+      for(j in 1:n){
+        for(k in 1:n){
+          if(A[i,j]>A[i,k]+A[k,j]){
+            A[i,j]=A[i,k]+A[k,j]
+          }
+        }
+      }
+    }
+    if(identical(B,A)){break}else{B=A} ##check whether it is reasonable
+  }
+  return(A)
+}
+```
+
+The corresponding C++ code is as follows.
+```{r,eval=FALSE}
+NumericMatrix Rcpp_shortest(NumericMatrix M){
+  M=M-1;
+  int n=max(M(_,1))+1; 
+  NumericMatrix A(n,n);
+  A.fill(R_PosInf);
+  A.fill_diag(0);
+  for(int i=0;i<M.nrow();i++){
+    A(M(i,0),M(i,1))=1;
+    A(M(i,1),M(i,0))=1;
+  }
+  while(true){
+    NumericMatrix B=clone(A);
+    for(int i=0;i<n;i++){
+      for(int j=0;j<n;j++){
+        for(int k=0;k<n;k++){
+          if(A(i,j)>A(i,k)+A(k,j)){
+            A(i,j)=A(i,k)+A(k,j);
+          }
+        }
+      }
+    }
+    if(sum(A!=B)==0){break;}else{B=clone(A);}
+  }
+  return A;
+}
+```
+
+The R code for benchmarking _R_shortest_ and _Rcpp_shortest_ is as follows:
+```{r,eval=TRUE}
+library(StatComp22031)
+data(data)
+identical(R_shortest(data),Rcpp_shortest(data)) ##consider whether the returned results are consistent
+library(rbenchmark)
+benchmark(R_shortest(data),Rcpp_shortest(data),
+          columns=c("test","replications","elapsed","relative")) #compare the speed
+```
+
+The above results show an evident computational speed gain of C++ against R.

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Mo Yang" />
+
+<meta name="date" content="2022-12-08" />
+
+<title>Introduction to StatComp22031</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to StatComp22031</h1>
+<h4 class="author">Mo Yang</h4>
+<h4 class="date">2022-12-08</h4>
+
+
+
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p><strong>StatComp22031</strong> is a simple R package containing two
+parts. It provides functions to simulate TS-OU (tempered stable
+Ornstein-Uhlenbeck) process which is about stochastic volatility of
+assets. This process consists of three parts, each of which has a
+corresponding function. It contains <em>s0_2</em> for the initial
+stationary distribution, <em>s1_2</em> for the non-compound Poission
+driving part, <em>s2_2</em> for the compound Poission driving part. Then
+the function <em>TSOU</em> gives the complete process.</p>
+<p>Also, it compares the performance of R and R++ (implemented through
+the R package <em>Rcpp</em>) by using a simple situation, which is about
+the urban shortest path problem. <em>R_shortest</em> and
+<em>Rcpp_shortest</em> functions are provided to solve the problem and
+compare R and Rcpp.</p>
+<p>The R package ‘rbenchmark’ can be used to benchmark the above R and
+C++ functions.</p>
+</div>
+<div id="ts-ou-process-the-first-part" class="section level2">
+<h2>TS-OU process (the first part)</h2>
+<div id="brief-introduction-of-principle" class="section level3">
+<h3>Brief introduction of principle</h3>
+<p>TS-OU process is an important subclass of non-Gaussian OU process,
+including inverse Gaussian OU process, and TS-OU process <span class="math inline">\(\{\sigma^2(t),t\ge0\}\)</span> satisfies
+stochastic differential equation:</p>
+<p><span class="math inline">\(\mathrm{d} \sigma^2(\mathrm{t})=-\lambda
+\sigma^2(\mathrm{t}) \mathrm{dt}+\mathrm{dz}(\lambda
+\mathrm{t})\quad\quad\quad(1)\)</span></p>
+<p><span class="math inline">\(\lambda&gt;0\)</span> is a parameter and
+<span class="math inline">\(\sigma^2(t)\)</span> is used to describe the
+spot volatility.It has a stable marginal distribution - TS(<span class="math inline">\(\kappa,\delta,\gamma\)</span>) (<span class="math inline">\(\kappa\in(0,1),\delta&gt;0,\gamma\ge0\)</span>).
+Its Lévy measure is</p>
+<p><span class="math inline">\(u(x)=\delta 2^k
+\frac{\kappa}{\Gamma(1-\kappa)} x^{-1-\kappa} \exp \left(-\frac{1}{2}
+\gamma^{1 / k} x\right), x&gt;0\quad\quad\quad(2)\)</span></p>
+<p><span class="math inline">\(z(t)\)</span> is a Lévy process with
+positive increment, and the Lévy measure of <span class="math inline">\(z(1)\)</span> distribution is</p>
+<p><span class="math inline">\(w(x)=\delta 2^k
+\frac{\kappa}{\Gamma(1-\kappa)}\left(\kappa x^{-1}+\frac{1}{2} \gamma^{1
+/ k}\right) x^{-\kappa} \exp \left(-\frac{1}{2} \gamma^{1 / k}
+\mathrm{x}\right),x&gt;0\quad\quad\quad(3)\)</span></p>
+<p>Integration form of TS-OU process determined by stochastic
+differential equation (1) is</p>
+<p><span class="math inline">\(\sigma^2(t)=\mathrm{e}^{-\lambda t}
+\sigma^2(0)+\mathrm{e}^{-\lambda t} \int_0^1 \mathrm{e}^{\lambda s}
+\mathrm{dz}(\lambda \mathrm{s})\quad\quad\quad(4)\)</span></p>
+<p>According to the Lévy measure of <span class="math inline">\(z(1)\)</span>, <span class="math inline">\(z(1)\)</span> can be divided into two parts, one
+part is $ ^{(1)} (1) $,and its Lévy measure is <span class="math inline">\(w^{(1)}(x)=\)</span> <span class="math inline">\((\delta \kappa) 2^k
+\frac{\kappa}{\Gamma(1-\kappa)} x^{-1-\kappa} \exp \left(-\frac{1}{2}
+\gamma^{1 / \kappa} \mathrm{x}\right), \mathrm{x}&gt;0\)</span>. That’s
+to say, <span class="math inline">\(\mathrm{z}^{(1)}(1)\)</span> obeys
+the distribution of <span class="math inline">\(\mathrm{TS}(\kappa,
+\kappa \delta, \delta)\)</span>. The other part is named <span class="math inline">\(\mathrm{z}^{(2)}\)</span>(1), and its Lévy measure
+is <span class="math inline">\(w^{(2)}(x)=(\delta \gamma \kappa)
+\frac{\left(\gamma^{1 / \kappa} / 2\right)^{1-\kappa}}{\Gamma(1-\kappa)}
+x^{-\kappa} \exp \left(-\frac{1}{2} \gamma^{1 / \kappa}
+x\right)\)</span>, <span class="math inline">\(\mathrm{x}&gt;0\)</span>.
+The reason is <span class="math inline">\(\frac{\left(\gamma^{1 /
+\kappa} / 2\right)^{1-\kappa}}{\Gamma(1-\kappa)} \mathrm{x}^{-\kappa}
+\exp \left(-\frac{1}{2} \gamma^{1 / \kappa} \mathrm{x}\right)\)</span>
+is the density function of <span class="math inline">\(\Gamma\left(1-\kappa, \frac{1}{2} \gamma^{1 /
+\kappa}\right)\)</span> distribution, where <span class="math inline">\(1-\kappa\)</span> is a shape parameter, <span class="math inline">\(\frac{1}{2} \gamma^{1 / k}\)</span> is a scale
+parameter, so <span class="math inline">\(\mathrm{z}^{(2)}(\mathrm{t})\)</span> is a
+compound Poisson process, which is</p>
+<p><span class="math inline">\(\mathrm{z}^{(2)}(\mathrm{t})
+\stackrel{\mathrm{d}}{=} \sum_{i=1}^{N(t)}
+\mathbf{Y}_i\quad\quad\quad(5)\)</span></p>
+<p>Among them, <span class="math inline">\(\{N(t), t\geqslant
+0\}\)</span> is a compound Poisson process with intensity parameter
+<span class="math inline">\(\delta \gamma \kappa\)</span>, and <span class="math inline">\(\mathrm{Y}_1,\mathrm{Y}_2,\cdots\)</span> are
+independent and identically distributed. <span class="math inline">\(\mathrm{Y}_{\mathrm{i}} \sim \Gamma\left(1-\kappa,
+\frac{1}{2} \gamma^{1 / \kappa}\right)\)</span>.</p>
+<p>According to (4),</p>
+<p><span class="math display">\[
+\begin{aligned}
+e^{-\lambda t} \int_0^1 e^{\lambda s} \mathrm{dz}(\lambda \mathrm{s})=
+&amp; \mathrm{e}^{-\lambda t} \int_0^1 \mathrm{e}^{\lambda \mathrm{s}}
+\mathrm{d} \mathrm{z}^{(1)}(\lambda \mathrm{s})+ \\
+&amp; \mathrm{e}^{-\lambda t} \int_0^1 \mathrm{e}^{\lambda s}
+\mathrm{dz^{(2)}}(\lambda \mathrm{s})
+\end{aligned}
+\]</span></p>
+<p>And we have</p>
+<p><span class="math inline">\(\mathrm{e}^{-\lambda t} \int_0^1
+\mathrm{e}^{\lambda s} \mathrm{dz^{(1)}}(\lambda \mathrm{s})
+\stackrel{\mathrm{d}}{=}\sum_{i=1}^{\infty} \exp \left(-\lambda t
+\mathrm{r}_{\mathrm{i}}\right) \text{min}\left\{\left(\frac{\mathrm{a}_i
+\kappa}{\mathrm{A} \lambda}\right)^{-1 / \kappa},
+\mathrm{e}_{\mathrm{i}} \mathrm{v}_{\mathrm{i}}^{1 /
+\kappa}\right\}\quad\quad\quad(6)\)</span></p>
+<p><span class="math inline">\(\left\{e_i\right\},\left\{v_i\right\},\left\{a_i\right\},\left\{r_i\right\}\)</span>
+are mutually independent. <span class="math inline">\(\left\{e_i\right\}\)</span> is a series of
+independent exponential distributions with an average value of <span class="math inline">\(1/\mathrm{B}\)</span>, <span class="math inline">\(\left\{v_i\right\}\)</span> and <span class="math inline">\(\left\{r_i\right\}\)</span> are independent random
+variables that are uniformly distributed on <span class="math inline">\([0,1]\)</span>, and <span class="math inline">\(\mathrm{a}_1 &lt; \mathrm{a}_2 &lt;
+\cdots\)</span> is the arrival time of Poisson process with intensity of
+1, and the above <span class="math inline">\(\mathrm{A}=\delta 2^\kappa
+\frac{\kappa^2}{\Gamma(1-\kappa)}\)</span>, <span class="math inline">\(\mathrm{B}=\frac{1}{2} \gamma^{1 /
+\kappa}\)</span>.</p>
+<p>According to (5) and Lebeague-Stieltjes integration,</p>
+<p><span class="math inline">\(e^{-\lambda t} \int_0^1 e^{\lambda s} d
+z^{(2)}(\lambda s) \stackrel{d}{=} e^{-\lambda t} \sum_{i=1}^{N(\lambda
+t)} e^{\lambda U_i} Y_i\quad\quad\quad(7)\)</span></p>
+<p><span class="math inline">\(\{N(t),t\ge0\}\)</span> and <span class="math inline">\(Y_i\)</span> are as above. <span class="math inline">\(U_i,i=1,2,\cdots\)</span> is the arrival time of
+the <span class="math inline">\(i\)</span>th hop of <span class="math inline">\(N(\lambda t)\)</span>.</p>
+<p>In addition, initial stationary distribution is as bellow:</p>
+<p><span class="math inline">\(\sigma^2(0) \stackrel{d}{=}
+\sum_{i=1}^{\infty} \text{min}\left\{\left(\frac{a_i
+\kappa}{A_0}\right)^{-1 / \kappa}, e_i v_i^{1 /
+\kappa}\right\}\quad\quad\quad(8)\)</span></p>
+<p><span class="math inline">\(\left\{e_i\right\},\left\{v_i\right\},\left\{a_i\right\},B\)</span>
+are as above, <span class="math inline">\(\mathrm{A_0}=\delta 2^\kappa
+\frac{\kappa}{\Gamma(1-\kappa)}\)</span>.</p>
+</div>
+<div id="simulating-data" class="section level3">
+<h3>Simulating data</h3>
+<p>According to (8), for the simulation of initial stationary
+distribution, we mainly deal with a random infinite sequence. Because
+<span class="math inline">\(\left\{a_i\right\}\)</span> is an increasing
+random sequence, <span class="math inline">\(\left\{\left(\frac{a_i
+\kappa}{A_0}\right)^{-1 / k}\right\}\)</span> is an decreasing sequence.
+Therefore, we can consider adopting the dynamic truncation method to
+approximate the infinite sequence. It is reasonable to adopt this-square
+method, which is <span class="math inline">\(min\left\{\left(\frac{\mathrm{a}_{\mathrm{i}}
+\kappa}{\mathrm{A}_0}\right)^{-1 / \kappa}, \mathrm{e}_{\mathrm{i}}
+\mathrm{v}_{\mathrm{i}}^{1/\kappa}\right)
+\leqslant\left(\frac{\mathrm{a}_{\mathrm{i}}
+\kappa}{\mathrm{A}_0}\right)^{-1 / \kappa}\)</span>,through the control
+system <span class="math inline">\(\left(\frac{\mathrm{a}_{\mathrm{i}}
+\kappa}{\mathrm{A}_0}\right)^{-1 / \kappa}\)</span>, we can fully
+control the size of the remaining term after the infinite sequence
+intercepts the preceding finite term.</p>
+<p>The code to realize this process is as follows:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="cf">function</span>(kappa,delta,gamma,small){</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  A0<span class="ot">=</span>delta<span class="sc">*</span><span class="dv">2</span><span class="sc">^</span>kappa<span class="sc">*</span>kappa<span class="sc">/</span><span class="fu">gamma</span>(<span class="dv">1</span><span class="sc">-</span>kappa)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  B<span class="ot">=</span>gamma<span class="sc">^</span>(<span class="dv">1</span><span class="sc">/</span>kappa)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  sigma0_2<span class="ot">=</span><span class="dv">0</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  a0<span class="ot">=</span><span class="fu">rexp</span>(<span class="dv">1</span>,<span class="at">rate=</span><span class="dv">1</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  decr_u<span class="ot">=</span>((a0<span class="sc">*</span>kappa)<span class="sc">/</span>A0)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">1</span><span class="sc">/</span>kappa)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span>(decr_u<span class="sc">&gt;</span>small){  <span class="do">##control truncation number</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    e0<span class="ot">=</span><span class="fu">rexp</span>(<span class="dv">1</span>,<span class="at">rate=</span>B);v0<span class="ot">=</span><span class="fu">runif</span>(<span class="dv">1</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    sigma0_2<span class="ot">=</span>sigma0_2<span class="sc">+</span><span class="fu">min</span>(decr_u,e0<span class="sc">*</span>(v0)<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    a<span class="ot">=</span><span class="fu">rexp</span>(<span class="dv">1</span>,<span class="at">rate=</span><span class="dv">1</span>);a0<span class="ot">=</span>a0<span class="sc">+</span>a</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    decr_u<span class="ot">=</span>((a0<span class="sc">*</span>kappa)<span class="sc">/</span>A0)<span class="sc">^</span>(<span class="sc">-</span><span class="dv">1</span><span class="sc">/</span>kappa)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(sigma0_2)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Let <span class="math inline">\(kappa=0.5,\delta=2,\gamma=4\)</span>,
+we can get Inverse Gaussian distribution - IG(2,4).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(StatComp22031)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">50</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>sigma0_2<span class="ot">=</span><span class="fu">replicate</span>(<span class="dv">1000</span>,<span class="fu">s0_2</span>(<span class="fl">0.5</span>,<span class="dv">2</span>,<span class="dv">4</span>,<span class="fl">0.00001</span>))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(sigma0_2,<span class="at">freq=</span><span class="cn">FALSE</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>According to (6), for the non-compound Poisson process driving part
+of TS-OU process, its simulation method is similar to that of initial
+stationary distribution, and its main program is as follows:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cf">function</span>(lambda,kappa,delta,gamma,Delta,small){</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  A<span class="ot">=</span>delta<span class="sc">*</span><span class="dv">2</span><span class="sc">^</span>kappa<span class="sc">*</span>kappa<span class="sc">^</span><span class="dv">2</span><span class="sc">/</span><span class="fu">gamma</span>(<span class="dv">1</span><span class="sc">-</span>kappa)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  B<span class="ot">=</span>gamma<span class="sc">^</span>(<span class="dv">1</span><span class="sc">/</span>kappa)<span class="sc">/</span><span class="dv">2</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  sigma1_2<span class="ot">=</span><span class="dv">0</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  a1<span class="ot">=</span><span class="fu">rexp</span>(<span class="dv">1</span>,<span class="at">rate=</span><span class="dv">1</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  decr_u1<span class="ot">=</span>((a1<span class="sc">*</span>kappa)<span class="sc">/</span>(A<span class="sc">*</span>lambda<span class="sc">*</span>Delta))<span class="sc">^</span>(<span class="sc">-</span><span class="dv">1</span><span class="sc">/</span>kappa)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span>(decr_u1<span class="sc">&gt;</span>small){</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    e1<span class="ot">=</span><span class="fu">rexp</span>(<span class="dv">1</span>,<span class="at">rate=</span>B);v1<span class="ot">=</span><span class="fu">runif</span>(<span class="dv">1</span>);r1<span class="ot">=</span><span class="fu">runif</span>(<span class="dv">1</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    sigma1_2<span class="ot">=</span>sigma1_2<span class="sc">+</span><span class="fu">exp</span>(<span class="sc">-</span>lambda<span class="sc">*</span>Delta<span class="sc">*</span>r1)<span class="sc">*</span><span class="fu">min</span>(decr_u1,e1<span class="sc">*</span>(v1)<span class="sc">^</span>(<span class="dv">1</span><span class="sc">/</span>kappa))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    a<span class="ot">=</span><span class="fu">rexp</span>(<span class="dv">1</span>,<span class="at">rate=</span><span class="dv">1</span>);a1<span class="ot">=</span>a1<span class="sc">+</span>a</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    decr_u1<span class="ot">=</span>((a1<span class="sc">*</span>kappa)<span class="sc">/</span>(A<span class="sc">*</span>lambda<span class="sc">*</span>Delta))<span class="sc">^</span>(<span class="sc">-</span><span class="dv">1</span><span class="sc">/</span>kappa)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(sigma1_2)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>According to (7), the simulation method of the compound Poisson
+process driving part of TS-OU process can be realized by controlling the
+number of Poisson process hops in a certain time with conditional loop
+statements. The main program is as follows:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cf">function</span>(lambda,kappa,delta,gamma,Delta,small){</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  t<span class="ot">=</span><span class="fu">rexp</span>(<span class="dv">1</span>,<span class="at">rate=</span>lambda<span class="sc">*</span>delta<span class="sc">*</span>gamma<span class="sc">*</span>kappa)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  tild_sig<span class="ot">=</span><span class="dv">0</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span>(t<span class="sc">&lt;=</span>Delta){</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    re<span class="ot">=</span><span class="fu">rgamma</span>(<span class="dv">1</span>,<span class="dv">1</span><span class="sc">-</span>kappa,<span class="at">rate=</span><span class="dv">1</span><span class="sc">/</span><span class="dv">2</span><span class="sc">*</span>gamma<span class="sc">^</span>(<span class="dv">1</span><span class="sc">/</span>kappa))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    tild_sig<span class="ot">=</span>tild_sig<span class="sc">+</span><span class="fu">exp</span>(lambda<span class="sc">*</span>t)<span class="sc">*</span>re</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    t<span class="ot">=</span>t<span class="sc">+</span><span class="fu">rexp</span>(<span class="dv">1</span>,<span class="at">rate=</span>lambda<span class="sc">*</span>delta<span class="sc">*</span>gamma<span class="sc">*</span>kappa)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  sigma2_2<span class="ot">=</span><span class="fu">exp</span>(<span class="sc">-</span>lambda<span class="sc">*</span>Delta)<span class="sc">*</span>tild_sig</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(sigma2_2)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>And then we can realize the TS-OU process:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">function</span>(lambda,kappa,delta,gamma,num,<span class="at">Delta=</span><span class="dv">1</span>,<span class="at">small=</span><span class="fl">0.00001</span>){</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  sigma_2<span class="ot">=</span><span class="fu">numeric</span>(num)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  sigma_2[<span class="dv">1</span>]<span class="ot">=</span><span class="fu">s0_2</span>(kappa,delta,gamma,small)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">2</span><span class="sc">:</span>num){</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    sigma_2[j]<span class="ot">=</span><span class="fu">exp</span>(<span class="sc">-</span>lambda<span class="sc">*</span>Delta)<span class="sc">*</span>sigma_2[j<span class="dv">-1</span>]<span class="sc">+</span><span class="fu">s1_2</span>(lambda,kappa,delta,gamma,Delta,small)<span class="sc">+</span><span class="fu">s2_2</span>(lambda,kappa,delta,gamma,Delta,small)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(sigma_2)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>For the simulation of TS-OU process orbit, the empirical
+autocorrelation function of this orbit is used to test. All <span class="math inline">\(\mathrm{OU}\)</span> processes <span class="math inline">\(\left\{\sigma^2(\mathrm{t}), \geqslant
+0\right\}\)</span> driven by the positive Lévy process determined by
+equation (1) has the autocorrelation function <span class="math inline">\(r(s)=\exp (-\lambda|s|)\)</span>. Select the
+parameters of TS-OU as <span class="math inline">\(\lambda=0.02,
+\kappa=0.4, \delta=2, \gamma=5\)</span>, set the sampling interval as
+<span class="math inline">\(\Delta=1\)</span>, and control the
+truncation variable <span class="math inline">\(\text{small}=0.00001\)</span>.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">10</span>)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>sigma_2<span class="ot">=</span><span class="fu">TSOU</span>(<span class="fl">0.02</span>,<span class="fl">0.4</span>,<span class="dv">2</span>,<span class="dv">5</span>,<span class="dv">5000</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>r<span class="ot">=</span><span class="cf">function</span>(lambda,s){<span class="fu">exp</span>(<span class="sc">-</span>lambda<span class="sc">*</span><span class="fu">abs</span>(s))}</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>x<span class="ot">=</span><span class="dv">0</span><span class="sc">:</span><span class="dv">35</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow=</span><span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">1</span>))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">acf</span>(sigma_2)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">lines</span>(x,<span class="fu">r</span>(<span class="fl">0.02</span>,x),<span class="at">type=</span><span class="st">&quot;l&quot;</span>)</span></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>You can see that the fitting effect is very good.</p>
+</div>
+</div>
+<div id="benchmarking-r-and-rcpp-the-second-part" class="section level2">
+<h2>Benchmarking R and Rcpp (the second part)</h2>
+<div id="problem-description" class="section level3">
+<h3>Problem description</h3>
+<p>Suppose there are cities of <em>n</em>, numbered <span class="math inline">\(1,2,\dots,n\)</span>. Some cities are known to be
+connected by highways, and each pair of connected cities is named <span class="math inline">\((F_i,T_i)\)</span>, where <span class="math inline">\(F_i,T_i\in\{1,2,\dots,n\}\)</span> and <span class="math inline">\(F_i&lt;T_i\)</span>,<span class="math inline">\(i=1,2,\dots,m\)</span>. Except these directly
+connected cities, any two other cities can only be connected by other
+cities, or they can’t be connected by highways at all. These connections
+can be entered with a new <em>R</em> matrix <span class="math inline">\(m\times2\)</span>, each row of which is a pair of
+<span class="math inline">\((F_i,T_i)\)</span> values.</p>
+<p>It is required to write an <em>R</em> function. After inputting the
+direct connection <span class="math inline">\(\text{M}\)</span>, it will
+output a matrix <em>R</em> <span class="math inline">\(n\times
+n\)</span>. <em>R[i,i]=0, R[i,j]=1</em> means direct connection,
+<em>R[i,j]=k</em> <span class="math inline">\((k\ge2)\)</span> means
+that city <em>i</em> and city <em>j</em> need to be connected by at
+least <em>k</em> sections of expressway, and <em>R[i,j]=Inf</em> means
+that city <em>i</em> and city <em>j</em> cannot be connected by
+expressway. The element value of <em>R</em> only takes into account the
+number of highway sections passing by, not the specific mileage. If
+moving from one city to a directly connected city by expressway is
+called one moving step, the element <span class="math inline">\((i,j)\)</span> in <em>R</em> is the number of
+steps that need to be moved from city <em>i</em> to city <em>j</em> by
+expressway.</p>
+</div>
+<div id="simulation-and-comparison" class="section level3">
+<h3>Simulation and comparison</h3>
+<p>This problem must use circulation, which is difficult to vectorize,
+and belongs to the problem that R is not good at. You can consider using
+Rcpp to implement the program in C++ language, which can greatly speed
+up.</p>
+<p>The source R code for <em>R_shortest</em> is as follows:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">function</span>(M){</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  n<span class="ot">=</span><span class="fu">max</span>(M)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  A<span class="ot">=</span><span class="fu">matrix</span>(<span class="cn">Inf</span>,n,n)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(M)){A[M[i,<span class="dv">1</span>],M[i,<span class="dv">2</span>]]<span class="ot">=</span>A[M[i,<span class="dv">2</span>],M[i,<span class="dv">1</span>]]<span class="ot">=</span><span class="dv">1</span>}</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">diag</span>(A)<span class="ot">=</span><span class="dv">0</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span>(<span class="cn">TRUE</span>){</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    B<span class="ot">=</span>A</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n){</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span>(j <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n){</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span>(k <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n){</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span>(A[i,j]<span class="sc">&gt;</span>A[i,k]<span class="sc">+</span>A[k,j]){</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>            A[i,j]<span class="ot">=</span>A[i,k]<span class="sc">+</span>A[k,j]</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">identical</span>(B,A)){<span class="cf">break</span>}<span class="cf">else</span>{B<span class="ot">=</span>A} <span class="do">##check whether it is reasonable</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(A)</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The corresponding C++ code is as follows.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>NumericMatrix <span class="fu">Rcpp_shortest</span>(NumericMatrix M){</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  M<span class="ot">=</span>M<span class="dv">-1</span>;</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  int n<span class="ot">=</span><span class="fu">max</span>(<span class="fu">M</span>(_,<span class="dv">1</span>))<span class="sc">+</span><span class="dv">1</span>; </span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  NumericMatrix <span class="fu">A</span>(n,n);</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">A.fill</span>(R_PosInf);</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">A.fill_diag</span>(<span class="dv">0</span>);</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span>(int <span class="at">i=</span><span class="dv">0</span>;i<span class="sc">&lt;</span><span class="fu">M.nrow</span>();i<span class="sc">++</span>){</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">A</span>(<span class="fu">M</span>(i,<span class="dv">0</span>),<span class="fu">M</span>(i,<span class="dv">1</span>))<span class="ot">=</span><span class="dv">1</span>;</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">A</span>(<span class="fu">M</span>(i,<span class="dv">1</span>),<span class="fu">M</span>(i,<span class="dv">0</span>))<span class="ot">=</span><span class="dv">1</span>;</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span>(true){</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    NumericMatrix B<span class="ot">=</span><span class="fu">clone</span>(A);</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span>(int <span class="at">i=</span><span class="dv">0</span>;i<span class="sc">&lt;</span>n;i<span class="sc">++</span>){</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>      <span class="cf">for</span>(int <span class="at">j=</span><span class="dv">0</span>;j<span class="sc">&lt;</span>n;j<span class="sc">++</span>){</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span>(int <span class="at">k=</span><span class="dv">0</span>;k<span class="sc">&lt;</span>n;k<span class="sc">++</span>){</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>          <span class="cf">if</span>(<span class="fu">A</span>(i,j)<span class="sc">&gt;</span><span class="fu">A</span>(i,k)<span class="sc">+</span><span class="fu">A</span>(k,j)){</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>            <span class="fu">A</span>(i,j)<span class="ot">=</span><span class="fu">A</span>(i,k)<span class="sc">+</span><span class="fu">A</span>(k,j);</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>          }</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        }</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span>(<span class="fu">sum</span>(A<span class="sc">!=</span>B)<span class="sc">==</span><span class="dv">0</span>){<span class="cf">break</span>;}<span class="cf">else</span>{B<span class="ot">=</span><span class="fu">clone</span>(A);}</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  return A;</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>The R code for benchmarking <em>R_shortest</em> and
+<em>Rcpp_shortest</em> is as follows:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(StatComp22031)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(data)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="fu">identical</span>(<span class="fu">R_shortest</span>(data),<span class="fu">Rcpp_shortest</span>(data)) <span class="do">##consider whether the returned results are consistent</span></span></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rbenchmark)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">benchmark</span>(<span class="fu">R_shortest</span>(data),<span class="fu">Rcpp_shortest</span>(data),</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>          <span class="at">columns=</span><span class="fu">c</span>(<span class="st">&quot;test&quot;</span>,<span class="st">&quot;replications&quot;</span>,<span class="st">&quot;elapsed&quot;</span>,<span class="st">&quot;relative&quot;</span>)) <span class="co">#compare the speed</span></span></code></pre></div>
+<pre><code>##                  test replications elapsed relative
+## 1    R_shortest(data)          100   35.14  135.154
+## 2 Rcpp_shortest(data)          100    0.26    1.000</code></pre>
+<p>The above results show an evident computational speed gain of C++
+against R.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
